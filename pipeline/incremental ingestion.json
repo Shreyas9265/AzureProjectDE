@@ -5,7 +5,22 @@
 			{
 				"name": "azuresSQL to lake",
 				"type": "Copy",
-				"dependsOn": [],
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "last cdc",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "current",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -18,7 +33,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT * FROM @{pipeline().parameters.Schema}.@{pipeline().parameters.Table} WHERE @{pipeline().parameters.cdc_cols} >'{@activity('last_cdc').output.value[0].cdc}, ",
+							"value": "SELECT * FROM @{pipeline().parameters.Schema}.@{pipeline().parameters.Table} WHERE @{pipeline().parameters.cdc_cols} >'@{activity('last cdc').output.value[0].cdc}",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -52,15 +67,21 @@
 				"outputs": [
 					{
 						"referenceName": "parquet_dynamic",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"container": "bronze",
+							"Folder": "Users",
+							"File": {
+								"value": "@concat(pipeline().parameters.Table,'_',variables('current'))",
+								"type": "Expression"
+							}
+						}
 					}
 				]
 			},
 			{
 				"name": "last cdc",
 				"type": "Lookup",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -84,7 +105,32 @@
 					},
 					"dataset": {
 						"referenceName": "json_dynamic",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"Container": "bronze",
+							"Folder": "cdc",
+							"File": "cdc.json"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "current",
+				"type": "SetVariable",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "current",
+					"value": {
+						"value": "@utcNow()",
+						"type": "Expression"
 					}
 				}
 			}
@@ -97,6 +143,11 @@
 				"type": "String"
 			},
 			"cdc_cols": {
+				"type": "String"
+			}
+		},
+		"variables": {
+			"current": {
 				"type": "String"
 			}
 		},
