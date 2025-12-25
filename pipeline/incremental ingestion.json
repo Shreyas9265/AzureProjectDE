@@ -31,7 +31,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT * FROM @{pipeline().parameters.Schema}.@{pipeline().parameters.Table} WHERE @{pipeline().parameters.cdc_cols} >'@{activity('last cdc').output.value[0].cdc}",
+							"value": "SELECT * FROM @{pipeline().parameters.Schema}.@{pipeline().parameters.Table} WHERE @{pipeline().parameters.cdc_cols} >'@{activity('last cdc').output.value[0].cdc}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -116,8 +116,6 @@
 			{
 				"name": "current",
 				"type": "SetVariable",
-				"state": "Inactive",
-				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"secureOutput": false,
