@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "azuresSQL to lake",
+				"name": "AzureSQLToLake",
 				"type": "Copy",
 				"dependsOn": [
 					{
@@ -135,7 +135,7 @@
 				"type": "IfCondition",
 				"dependsOn": [
 					{
-						"activity": "azuresSQL to lake",
+						"activity": "AzureSQLToLake",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -143,6 +143,10 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"expression": {
+						"value": "@greater(activity('AzureSQLToLake').output.dataRead,0)",
+						"type": "Expression"
+					},
 					"ifFalseActivities": [
 						{
 							"name": "DeleteEmptyFile",
@@ -165,10 +169,11 @@
 										"Folder": {
 											"value": "@pipeline().parameters.Table",
 											"type": "Expression"
-										}
+										},
+										"File": "@concat(pipeline().parameters.Table,'_',variables('current'))"
 									}
 								},
-								"enableLogging": true,
+								"enableLogging": false,
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
 									"recursive": true,
