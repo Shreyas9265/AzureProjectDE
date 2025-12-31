@@ -291,7 +291,7 @@
 												"parameters": {
 													"Container": "bronze",
 													"Folder": {
-														"value": "@{item().Table}_cdc",
+														"value": "cdc",
 														"type": "Expression"
 													},
 													"File": "empty.json"
@@ -304,7 +304,10 @@
 												"type": "DatasetReference",
 												"parameters": {
 													"Container": "bronze",
-													"Folder": "cdc",
+													"Folder": {
+														"value": "@{item().Table}_cdc",
+														"type": "Expression"
+													},
 													"File": "cdc.json"
 												}
 											}
